@@ -1,8 +1,16 @@
 import pygame
+from pygame import surface
 from pygame.event import post
 from pygame.locals import *
 import button
+from grid import Grid
 import track
+import os
+
+import pygame
+import os
+import grid
+
 
 
 class Text:
@@ -38,8 +46,9 @@ class App:
         self.clock = pygame.time.Clock()
         App.screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 
-        #Create track class
-        self.track = track.Track(self.surface)
+        # 1. Create the track class  2. Loads track data from text file and stores it in variable self.CURRENTTRACK
+        self.track = track.Track(self.screen)
+        self.CURRENTTRACK = track.Track._loadData(self)
 
         #Load Button Images
         upImg = pygame.image.load('imgs/up.jpg')
@@ -70,13 +79,16 @@ class App:
 
     def run(self):
         #Instance Handler
+        self.drawInit = True
         while App.running:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     App.running = False
 
             #Draw The Control Buttons
-            App.upB.draw(App.screen)
+            if App.upB.draw(App.screen):
+                print("UP")
+                self.draw()
             App.topLeftB.draw(App.screen)
             App.leftB.draw(App.screen)
             App.bottomLeftB.draw(App.screen)
@@ -84,11 +96,18 @@ class App:
             App.bottomRightB.draw(App.screen)
             App.rightB.draw(App.screen)
             App.topRightB.draw(App.screen)
-
-
-            App.headerText.draw()
-            pygame.display.update()
+            if self.drawInit:
+                self.draw()
+                self.drawInit = False
+        #    App.headerText.draw()
+        #    pygame.display.update()
         pygame.quit()
+
+    def draw(self):
+        #Draws the track
+        track.Track.draw(self, self.screen, self.CURRENTTRACK)
+        
+        pygame.display.update()
 
 
 
