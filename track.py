@@ -33,3 +33,12 @@ class Track():
         for elem in currentTrack:
             surface.blit(elem.image, elem.rect)
             #self.screen.blit(elem.image, elem.react)
+
+    def getGridWithProperty(self, currentTrack, prop):
+        xList =[]
+        yList = []
+        for elem in currentTrack:
+            if elem.type == prop:
+                xList.append(elem.x)
+                yList.append(elem.y)
+        return xList, yList

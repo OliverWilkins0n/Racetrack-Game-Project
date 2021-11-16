@@ -24,3 +24,6 @@ class Grid():
         if type == "g" or type == "t" or type == "s" or type == "f":
             self.image = pygame.image.load(filename)
             self.image = pygame.transform.scale(self.image, (GRIDSIZE, GRIDSIZE))
+
+    def __repr__(self):
+        return self.id, self.x, self.y, self.type
