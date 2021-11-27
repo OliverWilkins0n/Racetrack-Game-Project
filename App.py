@@ -35,6 +35,9 @@ class Text:
     def draw(self):
         App.screen.blit(self.img, self.rect)
 
+    def delete(self):
+        App.screen.blit()
+
 
 class App:
 
@@ -80,7 +83,8 @@ class App:
 
 
         #Create text
-        App.headerText = Text("Racetrack Game", 22, (255,255,255), pos=(550, 10),)
+        App.endGameText = Text("Game Over", 22, (255,255,255), pos=(550, 10),)
+        App.velocityText = Text("", 22, (255,255,255), pos=(550, 10),)
 
         App.running = True
 
@@ -116,6 +120,7 @@ class App:
         #Draws the track
         track.Track.draw(self, self.screen, self.CURRENTTRACK) #Draws Track
         self.raceCar_list.draw(self.screen) # Draws Car on screen
+        #App.velocityText.draw()
         pygame.display.update()
     
     def getStartGrid(self):
@@ -125,63 +130,107 @@ class App:
         midy = len(yList)//2
         return xList[midx]*25, yList[midy]*25
 
+    def moveCar(self, dx, dy):
+        initX = self.raceCar.rect.x
+        initY = self.raceCar.rect.y
+        self.raceCar.rect.x -= (dx*self.GRIDSIZE)
+        self.raceCar.rect.y -= (dy*self.GRIDSIZE)
+        #App.velocityText = Text("Velocity x: "+ str(self.raceCar.dx)+" Velocity y: "+str(self.raceCar.dy), 16, (255,255,255), pos=(200, 600),)
+        #Check the new position before the car is drawn to the screen
+        #self.checkAllPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y)
+        self.checkAllPoints(self.getCoordsBetweenPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y))
+       # self.checkPos(self.raceCar.rect.x, self.raceCar.rect.y)
+        self.draw()
+
+    def checkPos(self, x, y):
+        #If car goes off screen restarts the car to starting pos
+        if x > 1000 or y > 500 or x < 0 or y < 0:
+            startX, startY = self.getStartGrid()
+            self.raceCar.rect.x = startX
+            self.raceCar.rect.y = startY
+            self.raceCar.dx = 0
+            self.raceCar.dy = 0
+            self.draw()
+            return "OK"
+        #Car on grass can only move 1 grid per move
+        elif track.Track.getGridWithCoords(self, self.CURRENTTRACK, x, y) == 'g':
+            self.raceCar.dx = 0
+            self.raceCar.dy = 0
+            return 'g'
+        #Check to see if car has reached the finish line
+        elif track.Track.getGridWithCoords(self, self.CURRENTTRACK, x, y) == "f":
+            #Add What happens when reaching the finish line
+            #Display the amount of moves it took to finish.
+            print("FINISHED")
+            return 'f'
+    
+    def checkAllPoints(self, coords):
+        for coord in coords:
+            if self.checkPos(coord[0]*25, coord[1]*25) == "OK":
+                pass
+            elif self.checkPos(coord[0]*25, coord[1]*25) == 'g':
+                self.raceCar.dx = 0
+                self.raceCar.dy = 0
+                self.raceCar.rect.x = coord[0]*25
+                self.raceCar.rect.y = coord[1]*25
+                print("G")
+            elif self.checkPos(coord[0]*25, coord[1]*25) == 'f':
+                self.raceCar.dx = 0
+                self.raceCar.dy = 0
+                self.raceCar.rect.x = coord[0]*25
+                self.raceCar.rect.y = coord[1]*25
+                print("FINISHED RACE")
+                break
+
+    def getCoordsBetweenPoints(self, initX, initY, x, y):
+        xSpacing = (x - initX) / 9
+        ySpacing = (y - initY) / 9
+        return [[(initX + i * xSpacing)//25, (initY + i * ySpacing)//25]
+                for i in range(1, 9)]
+
     def controller(self):
+        #Checks to see if the car is out of bounds or on the grass
         #Car Controls
-            print(self.raceCar.dx, self.raceCar.dy)
+            
             if App.upB.draw(App.screen):
                 self.raceCar.dy += 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
 
             if App.topRightB.draw(App.screen):
                 self.raceCar.dy += 1
                 self.raceCar.dx -= 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
 
             if App.leftB.draw(App.screen):
                 self.raceCar.dx += 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
 
             if App.bottomRightB.draw(App.screen):
                 self.raceCar.dx -= 1
                 self.raceCar.dy -= 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
 
             if App.bottomB.draw(App.screen):
                 self.raceCar.dy -= 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
 
             if App.bottomLeftB.draw(App.screen):
                 self.raceCar.dy -= 1
                 self.raceCar.dx += 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
                 
             if App.rightB.draw(App.screen):
                 self.raceCar.dx -= 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
 
             if App.topLeftB.draw(App.screen):
                 self.raceCar.dx += 1
                 self.raceCar.dy += 1
-                self.raceCar.rect.x -= (self.raceCar.dx*self.GRIDSIZE)
-                self.raceCar.rect.y -= (self.raceCar.dy*self.GRIDSIZE)
-                self.draw()
-
-            #Create function and call here to check if car is out of bounds
-            #After each move
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
 
 
 if __name__ == "__main__":

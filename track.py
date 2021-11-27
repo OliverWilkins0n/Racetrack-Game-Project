@@ -42,3 +42,10 @@ class Track():
                 xList.append(elem.x)
                 yList.append(elem.y)
         return xList, yList
+
+    def getGridWithCoords(self, currentTrack, carX, carY):
+        carX = carX/25
+        carY = carY/25
+        for elem in currentTrack:
+            if elem.x == carX and elem.y == carY:
+                return elem.type
