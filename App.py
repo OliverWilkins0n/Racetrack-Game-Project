@@ -50,6 +50,7 @@ class App:
         flags = RESIZABLE
         self.clock = pygame.time.Clock()
         App.screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
+        App.end = False
 
         # 1. Create the track class  2. Loads track data from text file and stores it in variable self.CURRENTTRACK
         self.track = track.Track(self.screen)
@@ -68,6 +69,9 @@ class App:
         App.bottomRightImg = pygame.image.load("imgs/bottomright.png")
         App.rightImg = pygame.image.load("imgs/right.png")
         App.topRightImg = pygame.image.load("imgs/topright.png")
+        App.middleImg = pygame.image.load("imgs/middle.png")
+
+        App.playAgainImg = pygame.image.load("imgs/playagain.png")
 
 
         
@@ -80,6 +84,8 @@ class App:
         App.bottomRightB = button.Button(1150, 600, self.bottomRightImg, 1)
         App.rightB = button.Button(1150, 550, self.rightImg, 1)
         App.topRightB = button.Button(1150, 500, self.topRightImg, 1)
+        App.MiddleB = button.Button(1100, 550, self.middleImg, 1)
+        App.playAgainB = button.Button(300, 500, self.playAgainImg, 2)
 
 
         #Create text
@@ -99,6 +105,7 @@ class App:
                     App.running = False
 
             #Draw The Control Buttons
+
             self.controller()
 
             if self.drawInit:
@@ -116,6 +123,25 @@ class App:
         self.raceCar_list = pygame.sprite.Group()
         self.raceCar_list.add(self.raceCar)
 
+    def gameOverScreen(self):
+        #App().run(end)
+        #self.screen.fill((0,0,0))
+        App.counterText = Text("Moves Took: "+str(self.raceCar.moves), 22, (255,255,125), pos=(610, 600))
+        App.counterText.draw()
+        App.end = True
+
+    def restart(self):
+        startX, startY = self.getStartGrid()
+        self.raceCar.rect.x = startX
+        self.raceCar.rect.y = startY
+        self.raceCar.dx = 0
+        self.raceCar.dy = 0
+        self.raceCar.moves = 0
+        self.screen.fill((0,0,0))
+        self.controller()
+        self.draw()
+        
+
     def draw(self):
         #Draws the track
         track.Track.draw(self, self.screen, self.CURRENTTRACK) #Draws Track
@@ -130,18 +156,6 @@ class App:
         midy = len(yList)//2
         return xList[midx]*25, yList[midy]*25
 
-    def moveCar(self, dx, dy):
-        initX = self.raceCar.rect.x
-        initY = self.raceCar.rect.y
-        self.raceCar.rect.x -= (dx*self.GRIDSIZE)
-        self.raceCar.rect.y -= (dy*self.GRIDSIZE)
-        #App.velocityText = Text("Velocity x: "+ str(self.raceCar.dx)+" Velocity y: "+str(self.raceCar.dy), 16, (255,255,255), pos=(200, 600),)
-        #Check the new position before the car is drawn to the screen
-        #self.checkAllPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y)
-        self.checkAllPoints(self.getCoordsBetweenPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y))
-       # self.checkPos(self.raceCar.rect.x, self.raceCar.rect.y)
-        self.draw()
-
     def checkPos(self, x, y):
         #If car goes off screen restarts the car to starting pos
         if x > 1000 or y > 500 or x < 0 or y < 0:
@@ -150,37 +164,48 @@ class App:
             self.raceCar.rect.y = startY
             self.raceCar.dx = 0
             self.raceCar.dy = 0
+            self.raceCar.moves = 0
             self.draw()
             return "OK"
         #Car on grass can only move 1 grid per move
         elif track.Track.getGridWithCoords(self, self.CURRENTTRACK, x, y) == 'g':
             self.raceCar.dx = 0
             self.raceCar.dy = 0
+            print('g')
             return 'g'
+
         #Check to see if car has reached the finish line
         elif track.Track.getGridWithCoords(self, self.CURRENTTRACK, x, y) == "f":
             #Add What happens when reaching the finish line
             #Display the amount of moves it took to finish.
-            print("FINISHED")
+            self.gameOverScreen()
+            #print("FINISHED")
             return 'f'
     
     def checkAllPoints(self, coords):
+        count = 0
         for coord in coords:
-            if self.checkPos(coord[0]*25, coord[1]*25) == "OK":
+            if count == 0:
+                count += 1
                 pass
-            elif self.checkPos(coord[0]*25, coord[1]*25) == 'g':
-                self.raceCar.dx = 0
-                self.raceCar.dy = 0
-                self.raceCar.rect.x = coord[0]*25
-                self.raceCar.rect.y = coord[1]*25
-                print("G")
-            elif self.checkPos(coord[0]*25, coord[1]*25) == 'f':
-                self.raceCar.dx = 0
-                self.raceCar.dy = 0
-                self.raceCar.rect.x = coord[0]*25
-                self.raceCar.rect.y = coord[1]*25
-                print("FINISHED RACE")
-                break
+            else:
+                if self.checkPos(coord[0]*25, coord[1]*25) == "OK":
+                    pass
+                elif self.checkPos(coord[0]*25, coord[1]*25) == 'g':
+                    startX, startY = self.getStartGrid()
+                    self.raceCar.rect.x = startX
+                    self.raceCar.rect.y = startY
+                    self.raceCar.dx = 0
+                    self.raceCar.dy = 0
+                    self.raceCar.moves = 0
+                elif self.checkPos(coord[0]*25, coord[1]*25) == 't':
+                    return 't'
+                elif self.checkPos(coord[0]*25, coord[1]*25) == 'f':
+                    self.raceCar.dx = 0
+                    self.raceCar.dy = 0
+                    self.raceCar.rect.x = coord[0]*25
+                    self.raceCar.rect.y = coord[1]*25
+                    break
 
     def getCoordsBetweenPoints(self, initX, initY, x, y):
         xSpacing = (x - initX) / 9
@@ -188,10 +213,19 @@ class App:
         return [[(initX + i * xSpacing)//25, (initY + i * ySpacing)//25]
                 for i in range(1, 9)]
 
+    def moveCar(self, dx, dy):
+        initX = self.raceCar.rect.x
+        initY = self.raceCar.rect.y
+        self.raceCar.rect.x -= (dx*self.GRIDSIZE)
+        self.raceCar.rect.y -= (dy*self.GRIDSIZE)
+        self.raceCar.moves += 1
+        self.checkAllPoints(self.getCoordsBetweenPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y))
+        self.draw()
+
     def controller(self):
         #Checks to see if the car is out of bounds or on the grass
         #Car Controls
-            
+        #if App.end == False:  
             if App.upB.draw(App.screen):
                 self.raceCar.dy += 1
                 self.moveCar(self.raceCar.dx, self.raceCar.dy)
@@ -231,6 +265,21 @@ class App:
                 self.raceCar.dx += 1
                 self.raceCar.dy += 1
                 self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
+            if App.MiddleB.draw(App.screen):
+                self.moveCar(self.raceCar.dx, self.raceCar.dy)
+
+            if App.playAgainB.draw(App.screen):
+                self.restart()
+                    
+
+       # elif App.end == True:
+       #     print("FOUND")
+       #     App.playAgainB.draw(App.screen)
+       #     if App.playAgainB.draw(App.screen):
+       #             print("TEST")
+       #             App.checkPos(9000, 9000)
+       #             App.end = False
 
 
 if __name__ == "__main__":

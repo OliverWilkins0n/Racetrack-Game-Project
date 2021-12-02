@@ -9,3 +9,4 @@ class Car(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.dx = 0
         self.dy = 0
+        self.moves = 0
