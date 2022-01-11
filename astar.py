@@ -1,3 +1,6 @@
+import time
+import App
+
 class Node():
 
     def __init__(self, dx, dy, parent=None, position=None):
@@ -18,6 +21,8 @@ class Node():
 def astar(track, start, end):
     firstMove = True
     loop = 0
+    xVelocity = 0
+    yVelocity = 0
 
     # Create start and end node
     startNode = Node(0, 0, None, start)
@@ -46,8 +51,19 @@ def astar(track, start, end):
 
         openList.pop(currentIndex)
         closedList.append(currentNode)
+        print("Current: ", currentNode.position, " dx: ", currentNode.dx, "dy: ", currentNode.dy)
+        time.sleep(1)
 
-        if currentNode == endNode:
+        #Check to make sure that the car did not shoot across the finish point by checking all points it crossed in last move
+        if endNode.position in App.App.checkInbetween(App, currentNode.position[0], currentNode.position[1], endNode.position[0], endNode.position[1]):
+            path = []
+            current = currentNode
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            return path[::-1] # reversed
+
+        if currentNode.position == endNode.position:
             path = []
             current = currentNode
             while current is not None:
@@ -59,11 +75,14 @@ def astar(track, start, end):
         children = []
 
         if firstMove:
-            for newPosition in [((currentNode.dx)+0, (currentNode.dx)-1), ((currentNode.dx)+0, (currentNode.dx)+1), ((currentNode.dx)-1, (currentNode.dx)+0), ((currentNode.dx)+1, (currentNode.dx)+0), ((currentNode.dx)-1, (currentNode.dx)-1), ((currentNode.dx)-1, (currentNode.dx)+1), ((currentNode.dx)+1, (currentNode.dx)-1), ((currentNode.dx)+1, (currentNode.dx)+1)]: 
+            for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
+            #[((currentNode.dx)+0, (currentNode.dy)-1), ((currentNode.dx)+0, (currentNode.dy)+1), ((currentNode.dx)-1, (currentNode.dy)+0), ((currentNode.dx)+1, (currentNode.dy)+0), ((currentNode.dx)-1, (currentNode.dy)-1), ((currentNode.dx)-1, (currentNode.dy)+1), ((currentNode.dx)+1, (currentNode.dy)-1), ((currentNode.dx)+1, (currentNode.dy)+1)]: 
 
                 # Get node position
                 nodePosition = (currentNode.position[0] + newPosition[0], currentNode.position[1] + newPosition[1])
-
+                
+                #print("Node Position: ", nodePosition)
+               # time.sleep(1)
                 # check to see if position is on track
                 if nodePosition[0] > (len(track) - 1) or nodePosition[0] < 0 or nodePosition[1] > (len(track[len(track)-1]) -1) or nodePosition[1] < 0:
                     continue
@@ -73,11 +92,16 @@ def astar(track, start, end):
                     continue
 
                 # Create new node
-                xVelocity = currentNode.dx + newPosition[0]
-                yVelocity = currentNode.dy + newPosition[1]
+                print("positions: ", newPosition[0]," ", newPosition[1])
+                initXVel = xVelocity
+                initYVel = yVelocity
+                xVelocity += currentNode.dx + newPosition[0]
+                yVelocity += currentNode.dy + newPosition[1]
                # print("Velocity x: ", xVelocity," Velocity y: ", yVelocity)
                 newNode = Node(xVelocity, yVelocity, currentNode, nodePosition)
                 children.append(newNode)
+                xVelocity = initXVel
+                yVelocity = initYVel
                 #firstMove = False
 
 
@@ -89,12 +113,12 @@ def astar(track, start, end):
                     continue
 
             # Create the f, g, and h values
-            child.g = currentNode.g + 1
-            child.h = ((child.position[0] - endNode.position[0]) ** 2) + ((child.position[1] - endNode.position[1]) ** 2)
+            child.g = currentNode.g + 1 #Cost of Path from start node
+            child.h = ((child.position[0] - endNode.position[0]) ** 2) + ((child.position[1] - endNode.position[1]) ** 2) #Estimates cost of cheapest path
             child.f = child.g + child.h
 
-            print("test ", child.position, child.dx, child.dy)
-
+            #print("test ", child.position, child.dx, child.dy)
+            #time.sleep(0.01)
             # Child is already in the open list
             for openNode in openList:
                 if child == openNode and child.g > openNode.g:
@@ -119,6 +143,7 @@ def main():
     
     for i in trackList:
         print(i)
+
     print(trackList[18][6])
     print(trackList[4][36])
     start = (18, 6)

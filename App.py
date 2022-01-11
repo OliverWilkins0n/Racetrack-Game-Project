@@ -212,6 +212,12 @@ class App:
         ySpacing = (y - initY) / 9
         return [[(initX + i * xSpacing)//25, (initY + i * ySpacing)//25]
                 for i in range(1, 9)]
+    
+    def checkInbetween(self, initX, initY, x, y):
+        xSpacing = (x - initX) / 9
+        ySpacing = (y - initY) / 9
+        return [[(initX + i * xSpacing), (initY + i * ySpacing)]
+                for i in range(1, 9)]
 
     def moveCar(self, dx, dy):
         initX = self.raceCar.rect.x
