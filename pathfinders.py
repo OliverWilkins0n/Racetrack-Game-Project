@@ -1,6 +1,9 @@
+import collections
+from email.errors import StartBoundaryNotFoundDefect
+import queue
 import time
 import App
-from track import *
+import track
 
 ###   PROBLEMS  
 ###   Staring first move with 2 y Velocity
@@ -16,10 +19,27 @@ class Node():
         self.f = 0
 
         self.dx = dx
-        self.dy = dy
+        self.dy = dy    
+
+    def bfs(grid, start, end):
+        openList = []
+        startNode = Node(0, 0, None, start)
+        endNode = Node(0, 0, None, end)
+        openList.append(startNode)
+        seen = set([start])
+
+        while openList:
+            path = path.popleft()
+            x, y = path[-1]
+            if grid[y][x] == end:
+                return path
+            #for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
+                if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
+                    queue.append(path + [(x2, y2)])
+                    seen.add((x2, y2))
 
 
-    def astar(track, start, end):
+    def astar(track, CURRENTTRACK, start, end):
         firstMove = True
 
         # Create start and end node
@@ -76,7 +96,7 @@ class Node():
             if firstMove:
                 #newPosition is all the possible new positions with the current velocity availble to move to
                 for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
-
+                    validMove = True
                     # Get node position
                     nodePosition = (currentNode.position[0] + (newPosition[0]), currentNode.position[1] + (newPosition[1]))
                     
@@ -89,17 +109,23 @@ class Node():
                         continue
 
                     #Gets All the coords between its current position and the next node, Rounded to the closest int
-                    coordsBetween = Node.getCoordsBetweenPoints(Node, currentNode.position[0], currentNode.position[1], nodePosition[0], nodePosition[1])
+                    coordsBetween = Node.getCoordsBetweenPoints(Node, currentNode.position[1], currentNode.position[0], nodePosition[1], nodePosition[0])
                     #Testing
                     #print("Current Node:", currentNode.position, " New Node: ", nodePosition)
                     #print("Between these two points: ", coordsBetween)
-                    for i in range(0, len(coordsBetween)-1):
-                        if track[coordsBetween[i][0]][coordsBetween[i][1]] == 1:
-                            print("CRASH")
+                    #for i in range(0, len(coordsBetween)-1):
+                    #    if track[coordsBetween[i][0]][coordsBetween[i][1]] == 1:
+                    #        validMove = False
+
+                    if Node.checkAllPoints(Node, coordsBetween, CURRENTTRACK) == "g":
+                        print("Current Pos: ",currentNode.position, " New Pos: ", nodePosition)
+                        validMove = False
                             
-                #Creates new Node with the 
-                    newNode = Node(newPosition[0], newPosition[1], currentNode, nodePosition)
-                    children.append(newNode)
+                #Creates new Node with the
+                    if validMove: 
+                        newNode = Node(newPosition[0], newPosition[1], currentNode, nodePosition)
+                       # print("New Node: ", newNode)
+                        children.append(newNode)
 
 
             # Loop through children
@@ -111,9 +137,11 @@ class Node():
 
                 # Create the f, g, and h values
                 child.g = currentNode.g + 1 #Cost of Path from start node
-                dx = abs(child.position[0] - endNode.position[0])
-                dy = abs(child.position[1] - endNode.position[1])
+                dx = (child.position[0] - endNode.position[0])
+                dy = (child.position[1] - endNode.position[1])
+                #Works better then previous heuristic
                 child.h = (dx * dx + dy * dy) ** 0.5
+                #child.h = ((dx * dx)**2 + (dy * dy)**2) 
                 
                 #child.h = ((child.position[0] - endNode.position[0]) ** 2) + ((child.position[1] - endNode.position[1]) ** 2) #Estimates cost of cheapest path
                 child.f = child.g + child.h
@@ -145,8 +173,31 @@ class Node():
         xSpacing = (x - initX) / 9
         ySpacing = (y - initY) / 9
         
-        return [[round(initX + i * xSpacing), round(initY + i * ySpacing)]
+        return [[(initX + i * xSpacing), (initY + i * ySpacing)]
                 for i in range(1, 9)]
+
+    def checkPos(self, x, y, CURRENTTRACK):
+
+        if track.Track.getGridWithCoords(App, CURRENTTRACK, x, y) == 'g':
+            return 'g'
+        elif track.Track.getGridWithCoords(App, CURRENTTRACK, x, y) == "f":
+            return 'f'
+        else:
+            return 't'
+    
+    def checkAllPoints(self, coords, CURRENTTRACK):
+        count = 0
+        for coord in coords:
+            if count == 0:
+                count += 1
+                pass
+            else:
+                if Node.checkPos(Node, coord[0]*25, coord[1]*25, CURRENTTRACK) == "g":
+                    return 'g'
+                elif Node.checkPos(Node, coord[0]*25, coord[1]*25, CURRENTTRACK) == 'f':
+                    pass
+                else:
+                    pass
     
     #for i in trackList:
     #    print(i)

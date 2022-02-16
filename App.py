@@ -216,21 +216,6 @@ class App:
                     self.raceCar.rect.y = coord[1]*25
                     break
 
-#    def pathCheck(self, coords):
-#        count = 0
-#        valid = True
-#        for coord in coords:
-#            if count == 0:
-#                count += 1
-#                pass
-#            else:
-#                if App.checkPos(self, coord[0]*25, coord[1]*25) == "OK":
-#                    pass
-#                elif App.checkPos(self, coord[0]*25, coord[1]*25) == 'g':
-#                    valid = False
-#                else:
-#                    pass
-#        return valid
 
     def getCoordsBetweenPoints(self, initX, initY, x, y):
         xSpacing = (x - initX) / 9
@@ -251,6 +236,17 @@ class App:
         self.raceCar.rect.y -= (dy*self.GRIDSIZE)
         self.raceCar.moves += 1
         self.checkAllPoints(self.getCoordsBetweenPoints(initX, initY, self.raceCar.rect.x, self.raceCar.rect.y))
+        coords = [self.raceCar.rect.x//25, self.raceCar.rect.y//25]
+        if self.checkPos(coords[0]*25, coords[1]*25) == 'f':
+            self.gameOverScreen()
+        self.draw()
+
+    def moveCar1(self, dx, dy):
+        initX = self.raceCar.rect.x
+        initY = self.raceCar.rect.y
+        self.raceCar.rect.x -= (dx*self.GRIDSIZE)
+        self.raceCar.rect.y -= (dy*self.GRIDSIZE)
+        self.raceCar.moves += 1
         coords = [self.raceCar.rect.x//25, self.raceCar.rect.y//25]
         if self.checkPos(coords[0]*25, coords[1]*25) == 'f':
             self.gameOverScreen()
@@ -310,7 +306,7 @@ class App:
                 #X and Y positions are switched in the path finder as it loads the track into a 2d array
                 startpos[0] = start[1]//25
                 startpos[1] = start[0]//25
-                path = Node.astar(Node.loadTrack(), startpos, end)
+                path = Node.astar(Node.loadTrack(), self.CURRENTTRACK,startpos, end)
                 print(path)
 
                 #Finds the Difference in the x and y from each move in the path
@@ -324,7 +320,7 @@ class App:
                 print(difList)
                 #Move the car with the moves from difList, 1 second sleep to visualise the Moves
                 for move in difList:
-                    self.moveCar(move[0], move[1])
+                    self.moveCar1(move[0], move[1])
                     time.sleep(1)
 
             if App.playAgainB.draw(App.screen):
