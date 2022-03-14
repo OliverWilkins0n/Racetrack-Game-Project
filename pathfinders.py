@@ -34,9 +34,9 @@ class Node():
             if grid[y][x] == end:
                 return path
             #for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
-                if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
-                    queue.append(path + [(x2, y2)])
-                    seen.add((x2, y2))
+           # if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
+         #           queue.append(path + [(x2, y2)])
+          #          seen.add((x2, y2))
 
 
     def astar(track, CURRENTTRACK, start, end):
@@ -141,6 +141,7 @@ class Node():
                 dy = (child.position[1] - endNode.position[1])
                 #Works better then previous heuristic
                 child.h = (dx * dx + dy * dy) ** 0.5
+                #child.h = 1
                 #child.h = ((dx * dx)**2 + (dy * dy)**2) 
                 
                 #child.h = ((child.position[0] - endNode.position[0]) ** 2) + ((child.position[1] - endNode.position[1]) ** 2) #Estimates cost of cheapest path
