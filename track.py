@@ -12,7 +12,7 @@ class Track():
     def _loadData(self):
         self.inner = []
         #Reads lines of txt file
-        with open("tracks/track1.txt", "r") as f:
+        with open("tracks/Working1.txt", "r") as f:
             Lines = f.readlines()
             Lines = [i.strip() for i in Lines if len(i.strip()) > 0]
         id = 0

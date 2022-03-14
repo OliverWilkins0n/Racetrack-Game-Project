@@ -73,6 +73,7 @@ class App:
 
         App.playAgainImg = pygame.image.load("imgs/playagain.png")
         App.astarImg = pygame.image.load("imgs/astar.png")
+        App.bfsImg = pygame.image.load("imgs/bfs.png")
 
 
         
@@ -88,6 +89,7 @@ class App:
         App.MiddleB = button.Button(1100, 550, self.middleImg, 1)
         App.playAgainB = button.Button(300, 500, self.playAgainImg, 2)
         App.astarB = button.Button(300, 695, self.astarImg, 1)
+        App.bfsB = button.Button(375, 695, self.bfsImg,1)
 
 
         #Create text
@@ -322,6 +324,40 @@ class App:
                 for move in difList:
                     self.moveCar1(move[0], move[1])
                     time.sleep(1)
+
+            if App.bfsB.draw(App.screen):
+                start = self.getStartGrid()
+                end = self.getFinishLine()
+                startpos = [1,1]
+                endpos = [0,0]
+                startpos[0] = start[1]//25
+                startpos[1] = start[0]//25
+                #endpos[0] = end[0]//25
+                #endpos[1] = end[1]//25
+                path = Node.bfs1(startpos, end, Node.loadTrack())
+                #######FORMAT THE List Correctly
+                thePath = path[-2]
+                fixedPath = []
+                for elem in thePath:
+                    fixedPath.append(elem)
+                fixedPath.pop(0)
+                thePath = fixedPath[0]
+                thePath.pop(0)
+                #################################
+                ##########Convert the Coordinates Into Moves##########
+                thePath.append(end)
+                print("Path: ", thePath)
+                difList = thePath
+                for i in range(len(thePath)-1):
+
+                    #difList[i] = ((thePath[i+1][1] - thePath[i][1]), thePath[i+1][0] - thePath[i][0]) 
+                    difList[i] = (thePath[i][1] - thePath[i+1][1], (thePath[i][0] - thePath[i+1][0]))
+                
+                print(difList)
+                for move in difList:
+                    self.moveCar1(move[0], move[1])
+                    time.sleep(1)
+                ######################################################
 
             if App.playAgainB.draw(App.screen):
                 self.restart()

@@ -133,6 +133,7 @@ def bfs1(start, end, grid):
         for neighbour in get_neighbours(pos, grid, m.dx, m.dy):
            # print("Neighbour: ", neighbour)
             #if Node(0, 0, m.position, neighbour) not in visited and grid[neighbour[0]][neighbour[1]] != 1:
+           # print("Neighbour Loop: ", neighbour)
             if neighbour not in visited and grid[neighbour[0]][neighbour[1]] != 1:
                 #visited.append(Node(0, 0, m.position, neighbour))
                 dx = neighbour[0] - x
@@ -141,7 +142,7 @@ def bfs1(start, end, grid):
                 visited.append(neighbour)
                 path.append((pos, path1 + [pos]))
                 #path.append((pos, path1 + [pos]))
-                queue.append(Node(0, 0, m.position, neighbour))
+                queue.append(Node(dx, dy, m.position, neighbour))
             if neighbour[0] == end[0] and neighbour[1] == end[1]:
                 return path + [end]
 
@@ -152,13 +153,22 @@ def bfs1(start, end, grid):
 def get_neighbours(node, grid, dx, dy):
     neighbours = list()
    # print("DX DY: ",dx, dy)
-    for n in [(node[0]+1, node[1]), (node[0]-1, node[1]), (node[0], node[1]+1), (node[0], node[1]-1)]:
-        x = n[0]
-        y = n[1]
-        if grid[x][y] == 1:
+    #for n in [(node[0]+dx, node[1]), (node[0]-dx, node[1]), (node[0], node[1]+dy), (node[0], node[1]-dy)]:
+    #for n in [(dx+1, dy), (dx-1, dy), (dx, dy+1), (dx, dy-1)]:
+    for n in [(dx-1, dy-1),(dx, dy-1),(dx+1, dy-1), (dx-1, dy), (dx, dy), (dx+1, dy), (dx-1, dy+1),(dx, dy+1),(dx+1, dy+1)]:
+        x = n[0] + node[0]
+        y = n[1] + node[1]
+        pos = (x, y)
+        print("X, Y: ", x, y)
+        if x < 0 or y < 0:
+            pass
+        elif x >= 20 or y >= 40:
+            pass
+        elif grid[x][y] == 1:
             pass
         else:
-            neighbours.append(n)
+           # print("Neighbours: ", x, y)
+            neighbours.append(pos)
    # print("1: ",neighbours)
     return neighbours
 
@@ -186,11 +196,16 @@ def main():
     start = (18, 6)
     end = (4, 36)
     path = bfs1(start, end, trackList)
-    thePath = path[2]
-    #thePath.remove(path[0])
-    print("The Path: ",path[-2])
-    print("Length: ",len(path))
-    #print("Path found in ", len(path), " Moves!")
+    thePath = path[-2]
+    fixedPath = []
+    for elem in thePath:
+        fixedPath.append(elem)
+
+    fixedPath.pop(0)
+    thePath = fixedPath[0]
+    thePath.pop(0)
+    print("THe Path: ", thePath)
+
 
 
 if __name__ == '__main__':

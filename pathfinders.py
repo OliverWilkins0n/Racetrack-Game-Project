@@ -21,22 +21,64 @@ class Node():
         self.dx = dx
         self.dy = dy    
 
-    def bfs(grid, start, end):
-        openList = []
+    def bfs1(start, end, grid): 
+        visited = []
+        path = [(start, [start])]
         startNode = Node(0, 0, None, start)
-        endNode = Node(0, 0, None, end)
-        openList.append(startNode)
-        seen = set([start])
+        queue = [(startNode)]
+        #visited.append([startNode])
+        visited.append(start) 
+        while queue:
+        # print("Queue: ", queue)
+            vertex, path1 = path.pop(0)
+            m = queue.pop(0)
+            #currentNode = m.position
+            x = m.position[0]
+            y = m.position[1]
+            pos = x, y
+        # print("x, y: ",x,y)
+            #print(m, end = " ")
+            for neighbour in Node.get_neighbours(pos, grid, m.dx, m.dy):
+            # print("Neighbour: ", neighbour)
+                #if Node(0, 0, m.position, neighbour) not in visited and grid[neighbour[0]][neighbour[1]] != 1:
+            # print("Neighbour Loop: ", neighbour)
+                if neighbour not in visited and grid[neighbour[0]][neighbour[1]] != 1:
+                    #visited.append(Node(0, 0, m.position, neighbour))
+                    dx = neighbour[0] - x
+                    dy = neighbour[1] - y
+                    print("DX, DY: ", dx, dy)
+                    visited.append(neighbour)
+                    path.append((pos, path1 + [pos]))
+                    #path.append((pos, path1 + [pos]))
+                    queue.append(Node(dx, dy, m.position, neighbour))
+                if neighbour[0] == end[0] and neighbour[1] == end[1]:
+                    return path + [end]
 
-        while openList:
-            path = path.popleft()
-            x, y = path[-1]
-            if grid[y][x] == end:
-                return path
-            #for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
-           # if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
-         #           queue.append(path + [(x2, y2)])
-          #          seen.add((x2, y2))
+
+
+
+
+    def get_neighbours(node, grid, dx, dy):
+        neighbours = list()
+    # print("DX DY: ",dx, dy)
+        #for n in [(node[0]+dx, node[1]), (node[0]-dx, node[1]), (node[0], node[1]+dy), (node[0], node[1]-dy)]:
+        #for n in [(dx+1, dy), (dx-1, dy), (dx, dy+1), (dx, dy-1)]:
+        for n in [(dx-1, dy-1),(dx, dy-1),(dx+1, dy-1), (dx-1, dy), (dx, dy), (dx+1, dy), (dx-1, dy+1),(dx, dy+1),(dx+1, dy+1)]:
+            x = n[0] + node[0]
+            y = n[1] + node[1]
+            pos = (x, y)
+            print("X, Y: ", x, y)
+            if x < 0 or y < 0:
+                pass
+            elif x >= 20 or y >= 40:
+                pass
+            elif grid[x][y] == 1:
+                pass
+            else:
+            # print("Neighbours: ", x, y)
+                neighbours.append(pos)
+    # print("1: ",neighbours)
+        return neighbours
 
 
     def astar(track, CURRENTTRACK, start, end):
@@ -156,7 +198,7 @@ class Node():
                 openList.append(child)
 
     def loadTrack():
-        with open("tracks/track1.txt") as textFile:
+        with open("tracks/Working1.txt") as textFile:
             track = [line.split(";") for line in textFile]
 
         trackList = [[0 for i in range(40)] for j in range(20)]
