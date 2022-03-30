@@ -22,26 +22,21 @@ class Node():
         self.dy = dy    
 
     def bfs1(start, end, grid): 
+        startTime = time.time()
+        nodesExplored = 0
         visited = []
         path = [(start, [start])]
         startNode = Node(0, 0, None, start)
         queue = [(startNode)]
-        #visited.append([startNode])
         visited.append(start) 
         while queue:
-        # print("Queue: ", queue)
             vertex, path1 = path.pop(0)
             m = queue.pop(0)
-            #currentNode = m.position
             x = m.position[0]
             y = m.position[1]
             pos = x, y
-        # print("x, y: ",x,y)
-            #print(m, end = " ")
             for neighbour in Node.get_neighbours(pos, grid, m.dx, m.dy):
-            # print("Neighbour: ", neighbour)
-                #if Node(0, 0, m.position, neighbour) not in visited and grid[neighbour[0]][neighbour[1]] != 1:
-            # print("Neighbour Loop: ", neighbour)
+                nodesExplored += 1
                 if neighbour not in visited and grid[neighbour[0]][neighbour[1]] != 1:
                     #visited.append(Node(0, 0, m.position, neighbour))
                     dx = neighbour[0] - x
@@ -52,7 +47,11 @@ class Node():
                     #path.append((pos, path1 + [pos]))
                     queue.append(Node(dx, dy, m.position, neighbour))
                 if neighbour[0] == end[0] and neighbour[1] == end[1]:
+                    print("Runtime: %s" % (time.time()-startTime))
+                    print("Nodes Explored: ", nodesExplored)
                     return path + [end]
+
+    
 
 
 
@@ -60,9 +59,6 @@ class Node():
 
     def get_neighbours(node, grid, dx, dy):
         neighbours = list()
-    # print("DX DY: ",dx, dy)
-        #for n in [(node[0]+dx, node[1]), (node[0]-dx, node[1]), (node[0], node[1]+dy), (node[0], node[1]-dy)]:
-        #for n in [(dx+1, dy), (dx-1, dy), (dx, dy+1), (dx, dy-1)]:
         for n in [(dx-1, dy-1),(dx, dy-1),(dx+1, dy-1), (dx-1, dy), (dx, dy), (dx+1, dy), (dx-1, dy+1),(dx, dy+1),(dx+1, dy+1)]:
             x = n[0] + node[0]
             y = n[1] + node[1]
@@ -75,14 +71,14 @@ class Node():
             elif grid[x][y] == 1:
                 pass
             else:
-            # print("Neighbours: ", x, y)
                 neighbours.append(pos)
-    # print("1: ",neighbours)
         return neighbours
 
 
     def astar(track, CURRENTTRACK, start, end):
         firstMove = True
+        startTime = time.time()
+        nodesExplored = 0
 
         # Create start and end node
         startNode = Node(0, 0, None, start)
@@ -111,7 +107,6 @@ class Node():
             openList.pop(currentIndex)
             closedList.append(currentNode)
             print("Current: ", currentNode.position, " dx: ", currentNode.dx, "dy: ", currentNode.dy)
-            #time.sleep(1)
 
             #Check to make sure that the car did not shoot across the finish point by checking all points it crossed in last move
             if endNode.position in Node.getCoordsBetweenPoints(Node, currentNode.position[0], currentNode.position[1], endNode.position[0], endNode.position[1]):
@@ -121,6 +116,9 @@ class Node():
                 while current is not None:
                     path.append(current.position)
                     current = current.parent
+                print("Moves Taken: ", len(path))
+                print("Runtime: %s"%(time.time() - startTime))
+                print("Nodes Explored: ", nodesExplored)
                 return path[::-1] # reversed
 
             #Check to see if car is already in the end position
@@ -130,6 +128,9 @@ class Node():
                 while current is not None:
                     path.append(current.position)
                     current = current.parent
+                print("Moves Taken: ", len(path))
+                print("Runtime: %s"% (time.time() - startTime))
+                print("Nodes Explored: ", nodesExplored)
                 return path[::-1] # reversed
 
             # Create Children
@@ -138,6 +139,7 @@ class Node():
             if firstMove:
                 #newPosition is all the possible new positions with the current velocity availble to move to
                 for newPosition in [(currentNode.dx-1, currentNode.dy-1),(currentNode.dx, currentNode.dy-1),(currentNode.dx+1, currentNode.dy-1), (currentNode.dx-1, currentNode.dy), (currentNode.dx, currentNode.dy), (currentNode.dx+1, currentNode.dy), (currentNode.dx-1, currentNode.dy+1),(currentNode.dx, currentNode.dy+1),(currentNode.dx+1, currentNode.dy+1)]:
+                    nodesExplored += 1
                     validMove = True
                     # Get node position
                     nodePosition = (currentNode.position[0] + (newPosition[0]), currentNode.position[1] + (newPosition[1]))
@@ -152,12 +154,7 @@ class Node():
 
                     #Gets All the coords between its current position and the next node, Rounded to the closest int
                     coordsBetween = Node.getCoordsBetweenPoints(Node, currentNode.position[1], currentNode.position[0], nodePosition[1], nodePosition[0])
-                    #Testing
-                    #print("Current Node:", currentNode.position, " New Node: ", nodePosition)
-                    #print("Between these two points: ", coordsBetween)
-                    #for i in range(0, len(coordsBetween)-1):
-                    #    if track[coordsBetween[i][0]][coordsBetween[i][1]] == 1:
-                    #        validMove = False
+
 
                     if Node.checkAllPoints(Node, coordsBetween, CURRENTTRACK) == "g":
                         print("Current Pos: ",currentNode.position, " New Pos: ", nodePosition)
@@ -166,7 +163,6 @@ class Node():
                 #Creates new Node with the
                     if validMove: 
                         newNode = Node(newPosition[0], newPosition[1], currentNode, nodePosition)
-                       # print("New Node: ", newNode)
                         children.append(newNode)
 
 
@@ -183,10 +179,9 @@ class Node():
                 dy = (child.position[1] - endNode.position[1])
                 #Works better then previous heuristic
                 child.h = (dx * dx + dy * dy) ** 0.5
-                #child.h = 1
+                #child.h = 0
                 #child.h = ((dx * dx)**2 + (dy * dy)**2) 
                 
-                #child.h = ((child.position[0] - endNode.position[0]) ** 2) + ((child.position[1] - endNode.position[1]) ** 2) #Estimates cost of cheapest path
                 child.f = child.g + child.h
 
                 # Child is already in the open list
@@ -198,7 +193,7 @@ class Node():
                 openList.append(child)
 
     def loadTrack():
-        with open("tracks/Working1.txt") as textFile:
+        with open("tracks/track1.txt") as textFile:
             track = [line.split(";") for line in textFile]
 
         trackList = [[0 for i in range(40)] for j in range(20)]
