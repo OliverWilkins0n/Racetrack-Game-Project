@@ -252,6 +252,7 @@ class App:
         coords = [self.raceCar.rect.x//25, self.raceCar.rect.y//25]
         if self.checkPos(coords[0]*25, coords[1]*25) == 'f':
             self.gameOverScreen()
+            print("Real Moves: ", self.raceCar.moves)
         self.draw()
 
     def controller(self):
@@ -336,6 +337,7 @@ class App:
                 #endpos[1] = end[1]//25
                 path = Node.bfs1(startpos, end, Node.loadTrack())
                 #######FORMAT THE List Correctly
+                print("The Path: ", path)
                 thePath = path[-2]
                 fixedPath = []
                 for elem in thePath:

@@ -54,6 +54,7 @@ def backtrace(parent, start, end):
         #print(parent[path[-1]])
         path.append(parent[path[-1]])
     path.reverse()
+    print("The Path is: ",path)
     return path
 
 def bfs123(start, end, grid): #Just keeping velocity at 0,0 atm when creating nodes as not using velocity atm

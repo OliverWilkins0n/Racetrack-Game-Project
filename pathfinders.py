@@ -5,8 +5,6 @@ import time
 import App
 import track
 
-###   PROBLEMS  
-###   Staring first move with 2 y Velocity
 
 class Node():
 
@@ -49,6 +47,7 @@ class Node():
                 if neighbour[0] == end[0] and neighbour[1] == end[1]:
                     print("Runtime: %s" % (time.time()-startTime))
                     print("Nodes Explored: ", nodesExplored)
+                    print("The Path: ", path + [end])
                     return path + [end]
 
     
@@ -170,15 +169,34 @@ class Node():
             for child in children:
 
                 for closedChild in closedList:
-                    if child == closedChild:
+                   # print("Child: ",child)
+                   # print("closedChild: ", closedChild)
+                   if child.position == closedChild.position: #and child.dx == closedChild.dx and child.dy == closedChild.dy:
+                    #    print("YES")
                         continue
 
                 # Create the f, g, and h values
                 child.g = currentNode.g + 1 #Cost of Path from start node
+               # for openChild in openList:
+               #     if child == openChild:
+               #         if child.g > openChild.g:
+               #             child.g = openChild.g
+
                 dx = (child.position[0] - endNode.position[0])
                 dy = (child.position[1] - endNode.position[1])
                 #Works better then previous heuristic
-                child.h = (dx * dx + dy * dy) ** 0.5
+                #Euclidean
+                #child.h = (dx * dx + dy * dy) ** 0.5
+                
+                #Manhattan
+                #child.h = abs(endNode.position[0] - child.position[0]) + abs(endNode.position[1] - child.position[1])
+
+                #Octile Distance
+                child.h = 1 * (abs(child.position[0] - endNode.position[0]) + abs(child.position[1] - endNode.position[1]) + ((2**0.5)-2*1) * min(abs(child.position[0] - endNode.position[0]),abs(child.position[1] - endNode.position[1])))
+
+                #Chebyshev Distance
+                #child.h = 1 * (abs(child.position[0] - endNode.position[0]) + abs(child.position[1] - endNode.position[1]) + (2-2*1) * min(abs(child.position[0] - endNode.position[0]),abs(child.position[1] - endNode.position[1])))
+
                 #child.h = 0
                 #child.h = ((dx * dx)**2 + (dy * dy)**2) 
                 
